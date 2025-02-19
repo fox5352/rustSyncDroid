@@ -1,28 +1,34 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   BottomNavigation,
   BottomNavigationAction,
   Box,
   Container,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { HomeMaxTwoTone, SyncAltTwoTone } from "@mui/icons-material";
 
 function Rootlayout() {
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [value, setValue] = useState("home");
 
-  const map = {
-    "home": "/",
-    "sync": "/sync",
-  }
+  const map: Record<string, string> = {
+    home: "/",
+    sync: "/sync",
+    "/": "home",
+    "/sync": "sync",
+  };
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
     navigate(map[newValue] || "/");
   };
 
+  useEffect(() => {
+    setValue(map[pathname] || "home");
+  }, [pathname]);
 
   return (
     <Container

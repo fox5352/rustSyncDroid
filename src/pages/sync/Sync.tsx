@@ -8,7 +8,7 @@ import {
 } from "@tauri-apps/plugin-barcode-scanner";
 
 import { Box, Button, Container, TextField } from "@mui/material";
-import { useSession } from "../../store/Session";
+import { useSession } from "../../store/session";
 import { useNavigate } from "react-router-dom";
 
 export default function Sync() {

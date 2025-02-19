@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useSession } from "../../store/Session";
+import { useSession } from "../../store/session";
 
 export default function Home() {
   const { data } = useSession();
