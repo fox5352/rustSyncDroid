@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { HomeMaxTwoTone, SyncAltTwoTone } from "@mui/icons-material";
+import { initializeSessionHook } from "../store/session";
 
 function Rootlayout() {
   const { pathname } = useLocation();
@@ -29,6 +30,13 @@ function Rootlayout() {
   useEffect(() => {
     setValue(map[pathname] || "home");
   }, [pathname]);
+
+  useEffect(() => {
+    const start = async () => {
+      initializeSessionHook();
+    }
+    start()
+  }, [])
 
   return (
     <Container
