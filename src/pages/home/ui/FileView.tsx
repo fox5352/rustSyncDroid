@@ -2,7 +2,7 @@ import { Box, CircularProgress, Divider, Typography } from "@mui/material";
 
 import FolderBlock from "./FolderBlock";
 import { useSession } from "../../../store/session";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FileData, getFiles } from "../../../lib/requests";
 
 interface FileView {
@@ -71,18 +71,17 @@ export default function FileView({ type }: FileView) {
           </Typography>
         </Box>
       ) : isLoading ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "373px",
-          }}
-        >
-          <CircularProgress
-            sx={{ alignSelf: "center", mx: "auto" }}
-            size={100}
-          />
+        <Box sx={{
+          position: "absolute",
+          top: "0%",
+          left: "0%",
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}>
+          <CircularProgress size={200} />
         </Box>
       ) : (
         <Box

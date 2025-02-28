@@ -61,8 +61,10 @@ export async function saveFileToDownloads(file: FileTypeBuffer) {
       throw new Error("File binary data not found: " + fileName);
     }
 
+    const savePath = `/storage/emulated/0/Download/${fileName}`;
+
     // Save to the app's download directory
-    await writeFile(fileName, fileBuffer, {
+    await writeFile(savePath, fileBuffer, {
       baseDir: BaseDirectory.Download,
       create: true,
     });

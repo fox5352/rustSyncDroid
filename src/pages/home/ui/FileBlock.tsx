@@ -6,7 +6,7 @@ import { Box, Menu, MenuItem, Typography } from "@mui/material";
 import styles from "./FileBlock.module.css";
 import { FileType, getFile } from "../../../lib/requests";
 import { useSession } from "../../../store/session";
-import { saveFileWithPicker } from "../../../lib/fileUtils";
+import { saveFileToDownloads, saveFileWithPicker } from "../../../lib/fileUtils";
 
 export type FileBlockProps = FileType;
 
@@ -98,7 +98,7 @@ export default function FileBlock({
     }
   }, [metadata.imageMetaData?.thumbnail.data]);
 
-  const downloadHandler = async () => {
+  const downloadWithFilePicker = async () => {
     try {
       if (data == null) throw new Error("session is null");
 
@@ -115,6 +115,27 @@ export default function FileBlock({
       return;
     }
   };
+
+  const dowloadFile = async () => {
+    try {
+      if (data == null) throw new Error("session is null");
+
+      const [fileData, error] = await getFile(type, { name, path }, data);
+
+      if (error) throw new Error(error);
+
+      if (!fileData) throw new Error("file data is null");
+
+      await saveFileToDownloads(fileData);
+
+    } catch (error) {
+      console.error("Failed to download file:", error);
+      alert(
+        `Error downloading file: ${error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
 
   return (
     <>
@@ -229,7 +250,8 @@ export default function FileBlock({
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={downloadHandler}>Download</MenuItem>
+        <MenuItem onClick={downloadWithFilePicker}>Download To</MenuItem>
+        <MenuItem disabled onClick={dowloadFile}>Download</MenuItem>
       </Menu>
     </>
   );
