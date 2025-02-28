@@ -6,19 +6,11 @@ import { useEffect, useMemo, useState } from "react";
 import { FileData, getFiles } from "../../../lib/requests";
 
 interface FileView {
-  title: string;
   type: string;
 }
 
-interface FileView {
-  title: string;
-  type: string;
-}
-
-export default function FileView({ title, type }: FileView) {
+export default function FileView({ type }: FileView) {
   const { data: session } = useSession();
-
-  const memoSession = useMemo(() => session, [session?.url, session?.token]);
 
   // page state
   const [isLoading, setIsLoading] = useState(true);
@@ -27,11 +19,11 @@ export default function FileView({ title, type }: FileView) {
 
   useEffect(() => {
     const fetchFileData = async () => {
-      if (!memoSession) return;
+      if (!session) return;
       setIsError(null);
       setIsLoading(true);
 
-      const [res, err] = await getFiles<FileData[]>(type, memoSession);
+      const [res, err] = await getFiles<FileData[]>(type, session);
 
       if (err || !res) {
         setIsError({
@@ -48,16 +40,18 @@ export default function FileView({ title, type }: FileView) {
     };
 
     fetchFileData();
-  }, [memoSession]);
+  }, [session, type]);
+
+
+
   return (
     <Box sx={{
-      mr: 2,
-      p: 1.5,
-      pr: 2,
-    }}>
-      <Typography variant="h5" component="h2">
-        {title}
-      </Typography>
+      flexGrow: 1,
+      maxHeight: "calc(100% - 50px)",
+      overflow: "scroll"
+    }}
+      id="fileview-container"
+    >
       <Divider />
       {isError ? (
         <Box
@@ -97,11 +91,10 @@ export default function FileView({ title, type }: FileView) {
             gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)" },
             gridAutoRows: "371px",
             gap: 1,
-            height: "373px",
             overflowY: "auto",
-            border: "1px solid black",
-            borderRadius: "4px"
+            borderRadius: "4px",
           }}
+          id="folderBlock-container"
         >
           {fileData &&
             fileData.map((block, index) => (

@@ -65,7 +65,6 @@ function Rootlayout() {
       }}>
         <Outlet />
       </Box>
-
       <BottomNavigation
         sx={{
           height: "50px",

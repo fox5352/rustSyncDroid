@@ -41,7 +41,6 @@ export default function FolderBlock({ folder, fileData, type }: FolderBlock) {
       </Typography>
       <Divider />
       <Box
-        id="testing"
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
@@ -51,7 +50,7 @@ export default function FolderBlock({ folder, fileData, type }: FolderBlock) {
           width: "100%",
           height: "calc(100% - 8%)",
           p: 0.5,
-          border: "1px solid black",
+          pr: 2,
           borderRadius: "4px",
         }}
       >
