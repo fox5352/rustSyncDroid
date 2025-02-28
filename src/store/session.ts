@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import Database from "@tauri-apps/plugin-sql";
-import { log } from "../lib/logging";
 
 
 async function connect(): Promise<Database> {
@@ -41,7 +40,6 @@ export type Session = {
 
 /**
  * Hook for managing session data
- * @typedef {Object} SessionHook
  */
 type SessionHook = {
   /** Current session data or null if no active session */

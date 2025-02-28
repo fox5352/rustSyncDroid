@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { confirm } from "@tauri-apps/plugin-dialog";
 
 import { Image, MusicNote, Videocam } from "@mui/icons-material";
 import { Box, Menu, MenuItem, Typography } from "@mui/material";
