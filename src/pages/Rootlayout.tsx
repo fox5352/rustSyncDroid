@@ -3,16 +3,18 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Box,
-  Container,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { HomeMaxTwoTone, SyncAltTwoTone } from "@mui/icons-material";
 import { initializeSessionHook } from "../store/session";
+import { log } from "../lib/logging";
 
 function Rootlayout() {
   const { pathname } = useLocation();
+
   const navigate = useNavigate();
+
   const [value, setValue] = useState("home");
 
   const map: Record<string, string> = {
@@ -24,35 +26,50 @@ function Rootlayout() {
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
-    navigate(map[newValue] || "/");
+
+    const route = map[newValue];
+
+    if (route) navigate(route);
   };
 
   useEffect(() => {
-    setValue(map[pathname] || "home");
+    if (!pathname) return;
+    const route = map[pathname];
+
+    if (route) {
+      setValue(map[pathname]);
+    } else {
+      setValue("home");
+    }
   }, [pathname]);
 
   useEffect(() => {
-    const start = async () => {
+    try {
       initializeSessionHook();
+    } catch (error) {
+      log(`failed to initialize session hook in rootlayout ${error}`)
+
+      alert(`failed to initialize session hook in rootlayout ${error}`);
     }
-    start()
+
   }, [])
 
   return (
-    <Container
-      sx={{
-        height: "100vh",
-        width: "100vw",
+    <>
+      <Box sx={{
+        height: "calc(100vh - 55px)",
+        width: "100%",
         margin: 0,
         padding: 0,
-        overflow: "hidden",
-      }}
-    >
-      <Box sx={{ width: "100%", height: "94vh", margin: 0 }}>
+        overflowY: "scroll",
+      }}>
         <Outlet />
       </Box>
+
       <BottomNavigation
-        sx={{ height: "6vh" }}
+        sx={{
+          height: "50px",
+        }}
         value={value}
         onChange={handleChange}
       >
@@ -67,7 +84,7 @@ function Rootlayout() {
           icon={<SyncAltTwoTone />}
         />
       </BottomNavigation>
-    </Container>
+    </>
   );
 }
 

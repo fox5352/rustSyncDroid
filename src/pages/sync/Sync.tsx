@@ -56,7 +56,11 @@ export default function Sync() {
       }
 
       if (typeof data == "string") {
-        const [url, token] = data.split("?");
+        const [url, buffer] = data.split("?");
+        const params = new URLSearchParams(buffer);
+        const token = params.get("token");
+
+        if (!token) alert("Invalid token given");
 
         if (url && token) {
           setSession({ url, token });

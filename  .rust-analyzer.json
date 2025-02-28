@@ -1,0 +1,4 @@
+{
+  "files.excludeDirs": ["**/target", "**/node_modules", "**/.git"],
+  "cargo.targetDir": "target"
+}
