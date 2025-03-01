@@ -7,6 +7,7 @@ import styles from "./FileBlock.module.css";
 import { FileType, getFile } from "../../../lib/requests";
 import { useSession } from "../../../store/session";
 import { saveFileToDownloads, saveFileWithPicker } from "../../../lib/fileUtils";
+import { useLoadingState } from "../../../ui/LoadingModel";
 
 export type FileBlockProps = FileType;
 
@@ -16,7 +17,10 @@ export default function FileBlock({
   type,
   metadata,
 }: FileBlockProps) {
+  // hooks
+  const { toggleLoadingState } = useLoadingState();
   const { data } = useSession();
+  // component state
   const [image, setImage] = useState<string | null>(null);
   const [additionalData, setAdditionalData] = useState({
     duration: "",
@@ -102,7 +106,16 @@ export default function FileBlock({
     try {
       if (data == null) throw new Error("session is null");
 
-      const [fileData, error] = await getFile(type, { name, path }, data);
+      const controller = new AbortController();
+
+      toggleLoadingState(() => {
+        toggleLoadingState();
+        controller.abort()
+      })
+
+      const [fileData, error] = await getFile(type, { name, path }, data, controller.signal);
+
+      toggleLoadingState(null);
 
       if (error) throw new Error(error);
 
@@ -110,6 +123,7 @@ export default function FileBlock({
 
       await saveFileWithPicker(fileData);
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
       //@ts-ignore
       alert(`Error downloading ${type} :${error}`);
       return;
@@ -120,7 +134,16 @@ export default function FileBlock({
     try {
       if (data == null) throw new Error("session is null");
 
-      const [fileData, error] = await getFile(type, { name, path }, data);
+      const controller = new AbortController();
+
+      toggleLoadingState(() => {
+        toggleLoadingState();
+        controller.abort()
+      })
+
+      const [fileData, error] = await getFile(type, { name, path }, data, controller.signal);
+
+      toggleLoadingState(null)
 
       if (error) throw new Error(error);
 
@@ -129,6 +152,8 @@ export default function FileBlock({
       await saveFileToDownloads(fileData);
 
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+
       console.error("Failed to download file:", error);
       alert(
         `Error downloading file: ${error instanceof Error ? error.message : String(error)
@@ -251,7 +276,7 @@ export default function FileBlock({
         }}
       >
         <MenuItem onClick={downloadWithFilePicker}>Download To</MenuItem>
-        <MenuItem disabled onClick={dowloadFile}>Download</MenuItem>
+        <MenuItem onClick={dowloadFile}>Download</MenuItem>
       </Menu>
     </>
   );

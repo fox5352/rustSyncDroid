@@ -13,6 +13,7 @@
       "identifier": "fs:scope",
       "allow": [
         { "path": "$APPDATA/*" },
+        { "path": "/storage/emulated/0/*"},
         { "path": "/storage/emulated/0/Download/*" },
         { "path": "/storage/emulated/0/Pictures/*" },
         { "path": "/storage/emulated/0/Music/*" }

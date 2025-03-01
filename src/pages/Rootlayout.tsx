@@ -1,14 +1,16 @@
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { initializeSessionHook } from "../store/session";
+import { log } from "../lib/logging";
+// ui
 import {
   BottomNavigation,
   BottomNavigationAction,
   Box,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import LoadingProvider from "../ui/LoadingModel";
 
 import { HomeMaxTwoTone, SyncAltTwoTone } from "@mui/icons-material";
-import { initializeSessionHook } from "../store/session";
-import { log } from "../lib/logging";
 
 function Rootlayout() {
   const { pathname } = useLocation();
@@ -55,7 +57,7 @@ function Rootlayout() {
   }, [])
 
   return (
-    <>
+    <LoadingProvider>
       <Box sx={{
         height: "calc(100vh - 55px)",
         width: "100%",
@@ -83,7 +85,7 @@ function Rootlayout() {
           icon={<SyncAltTwoTone />}
         />
       </BottomNavigation>
-    </>
+    </LoadingProvider>
   );
 }
 
