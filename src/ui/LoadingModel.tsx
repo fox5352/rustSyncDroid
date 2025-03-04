@@ -25,7 +25,7 @@ const initialLoadingState: LoadingState = {
 // Create the context with proper typing
 const LoadingContext = createContext<LoadingContextState>({
   ...initialLoadingState,
-  toggleLoadingState: () => { }
+  toggleLoadingState: () => { },
 });
 
 export const useLoadingState = (): LoadingContextState => {
@@ -39,8 +39,8 @@ export const useLoadingState = (): LoadingContextState => {
 };
 
 
-function LoadingModel({ loading }: { loading: boolean }) {
-  const { cancelFunction } = useLoadingState();
+function LoadingModel() {
+  const { cancelFunction, loading } = useLoadingState();
   const coverRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(300);
 
@@ -106,12 +106,12 @@ export default function LoadingProvider({ children }: { children: ReactNode }) {
 
   const value: LoadingContextState = {
     ...state,
-    toggleLoadingState
+    toggleLoadingState,
   };
 
   return (
     <LoadingContext.Provider value={value}>
-      <LoadingModel loading={state.loading} />
+      <LoadingModel />
       {children}
     </LoadingContext.Provider>
   );

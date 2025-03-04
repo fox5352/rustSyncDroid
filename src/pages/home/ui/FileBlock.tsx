@@ -6,7 +6,7 @@ import { Box, Menu, MenuItem, Typography } from "@mui/material";
 import styles from "./FileBlock.module.css";
 import { FileType, getFile } from "../../../lib/requests";
 import { useSession } from "../../../store/session";
-import { saveFileToDownloads, saveFileWithPicker } from "../../../lib/fileUtils";
+import { saveFileWithPicker } from "../../../lib/fileUtils";
 import { useLoadingState } from "../../../ui/LoadingModel";
 
 export type FileBlockProps = FileType;
@@ -30,9 +30,11 @@ export default function FileBlock({
   // menu Component
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -109,8 +111,8 @@ export default function FileBlock({
       const controller = new AbortController();
 
       toggleLoadingState(() => {
+        controller.abort();
         toggleLoadingState();
-        controller.abort()
       })
 
       const [fileData, error] = await getFile(type, { name, path }, data, controller.signal);
@@ -121,7 +123,7 @@ export default function FileBlock({
 
       if (!fileData) throw new Error("file data is null");
 
-      await saveFileWithPicker(fileData);
+      await saveFileWithPicker(fileData, `${type}/${fileData.extension.replace(".", "")}`);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return;
       //@ts-ignore
@@ -130,37 +132,6 @@ export default function FileBlock({
     }
   };
 
-  const dowloadFile = async () => {
-    try {
-      if (data == null) throw new Error("session is null");
-
-      const controller = new AbortController();
-
-      toggleLoadingState(() => {
-        toggleLoadingState();
-        controller.abort()
-      })
-
-      const [fileData, error] = await getFile(type, { name, path }, data, controller.signal);
-
-      toggleLoadingState(null)
-
-      if (error) throw new Error(error);
-
-      if (!fileData) throw new Error("file data is null");
-
-      await saveFileToDownloads(fileData);
-
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return;
-
-      console.error("Failed to download file:", error);
-      alert(
-        `Error downloading file: ${error instanceof Error ? error.message : String(error)
-        }`
-      );
-    }
-  }
 
   return (
     <>
@@ -181,7 +152,7 @@ export default function FileBlock({
       >
         <Typography
           sx={{
-            height: "25%",
+            height: "22%",
             overflow: "hidden",
             textAlign: "left",
             borderBottom: "1px solid black",
@@ -189,7 +160,7 @@ export default function FileBlock({
         >
           {name.slice(0, 13) + "..."}
         </Typography>
-        <Box sx={{ height: "75%", position: "relative" }}>
+        <Box sx={{ height: "79%", position: "relative" }}>
           {/* bg icon */}
           <Box
             sx={{
@@ -276,7 +247,6 @@ export default function FileBlock({
         }}
       >
         <MenuItem onClick={downloadWithFilePicker}>Download To</MenuItem>
-        <MenuItem onClick={dowloadFile}>Download</MenuItem>
       </Menu>
     </>
   );

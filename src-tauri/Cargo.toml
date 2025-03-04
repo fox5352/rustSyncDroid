@@ -27,6 +27,8 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-log = "2"
+tauri-plugin-android-fs = "3.0.1"
+base64 = "0.22.1"
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-barcode-scanner = "2"

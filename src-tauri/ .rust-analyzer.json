@@ -1,8 +1,0 @@
-{
-  "files.excludeDirs": [
-    "**/target", // Exclude target folder
-    "**/node_modules", // Exclude node_modules
-    "**/.git" // Exclude git folder
-  ],
-  "cargo.targetDir": "target" // Use the default build directory
-}

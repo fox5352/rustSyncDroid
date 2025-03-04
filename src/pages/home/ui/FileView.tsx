@@ -88,7 +88,7 @@ export default function FileView({ type }: FileView) {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)" },
-            gridAutoRows: "371px",
+            gridAutoRows: "395px",
             gap: 1,
             overflowY: "auto",
             borderRadius: "4px",

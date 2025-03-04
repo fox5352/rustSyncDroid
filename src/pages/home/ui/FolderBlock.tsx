@@ -50,7 +50,6 @@ export default function FolderBlock({ folder, fileData, type }: FolderBlock) {
           width: "100%",
           height: "calc(100% - 8%)",
           p: 0.5,
-          pr: 2,
           borderRadius: "4px",
         }}
       >

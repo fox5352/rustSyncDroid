@@ -3780,10 +3780,12 @@ dependencies = [
 name = "rustsyncdroid"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-android-fs",
  "tauri-plugin-barcode-scanner",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
@@ -4718,6 +4720,20 @@ dependencies = [
  "tauri-utils",
  "toml 0.8.20",
  "walkdir",
+]
+
+[[package]]
+name = "tauri-plugin-android-fs"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d47c33af54366bba38d1c1086194ea3e96a2a5b958f8282a936d0a56b7df66f4"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tauri-plugin-fs",
+ "thiserror 2.0.11",
 ]
 
 [[package]]
