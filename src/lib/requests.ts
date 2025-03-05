@@ -95,8 +95,8 @@ async function request(
   url: string,
   method: "GET" | "POST" | "PUT",
   session: Session,
-  body?: string,
-  signal?: AbortSignal
+  body?: string
+
 ) {
   const [addr, token] = [session.url, session.token];
 
@@ -113,7 +113,7 @@ async function request(
       Authorization: `Bearer ${token}`,
     },
     body: body,
-    signal
+
   };
 
   const res = await fetch(`${addr}/${url}`, options);
@@ -199,8 +199,8 @@ export type FileTypeBuffer = FileType & {
 export async function getFile(
   type: string,
   fileData: { name: string, path: string },
-  session: Session,
-  signal?: AbortSignal
+  session: Session
+
 ): Promise<[FileTypeBuffer | null, string | null]> {
   const encodedName = encodeURIComponent(fileData.name);
   const encodedPath = encodeURIComponent(fileData.path);
@@ -209,9 +209,9 @@ export async function getFile(
   const res = await request(
     url,
     "GET",
-    session,
-    undefined,
-    signal
+    session
+
+
   );
 
   if (!res.ok) {

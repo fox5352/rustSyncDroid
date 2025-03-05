@@ -1,34 +1,34 @@
 import { Navigate } from "react-router-dom";
 import { useSession } from "../../store/session";
-import { BottomNavigation, BottomNavigationAction, Box, CircularProgress, Container } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Container } from "@mui/material";
 import { ImageTwoTone, AudioFile, VideoFile } from "@mui/icons-material";
 import FileView from "./ui/FileView";
 import { useState } from "react";
 
 export default function Home() {
-  const { data, loading } = useSession();
+  const { data } = useSession();
   const [tab, setTab] = useState("audio");
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setTab(newValue);
   }
 
-  if (loading) {
-    return (
-      <Box sx={{
-        position: "absolute",
-        top: "0%",
-        left: "0%",
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}>
-        <CircularProgress size={200} />
-      </Box>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box sx={{
+  //       position: "absolute",
+  //       top: "0%",
+  //       left: "0%",
+  //       height: "100%",
+  //       width: "100%",
+  //       display: "flex",
+  //       justifyContent: "center",
+  //       alignItems: "center",
+  //     }}>
+  //       <CircularProgress size={200} />
+  //     </Box>
+  //   );
+  // }
 
   if (data == null) {
     return <Navigate to="/sync" />;

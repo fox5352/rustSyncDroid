@@ -108,16 +108,12 @@ export default function FileBlock({
     try {
       if (data == null) throw new Error("session is null");
 
-      const controller = new AbortController();
 
-      toggleLoadingState(() => {
-        controller.abort();
-        toggleLoadingState();
-      })
+      toggleLoadingState()
 
-      const [fileData, error] = await getFile(type, { name, path }, data, controller.signal);
+      const [fileData, error] = await getFile(type, { name, path }, data);
 
-      toggleLoadingState(null);
+      toggleLoadingState();
 
       if (error) throw new Error(error);
 

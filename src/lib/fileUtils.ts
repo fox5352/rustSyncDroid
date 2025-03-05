@@ -1,4 +1,3 @@
-import { writeFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 import { FileTypeBuffer } from "./requests";
 import { invoke } from "@tauri-apps/api/core";
 
