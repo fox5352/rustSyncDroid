@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "npm" # Change to npm or pnpm if you use those
+          cache: "npm"
 
       - name: setup java
         uses: actions/setup-java@v3
@@ -26,10 +26,9 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      - name: Install Rust Android targets
+        run: |
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -37,7 +36,7 @@ jobs:
           workspaces: "./src-tauri -> target"
 
       - name: install frontend dependencies
-        run: npm install # Change if you use npm or pnpm
+        run: npm install
 
       - name: setup Android signing
         run: |
@@ -47,13 +46,19 @@ jobs:
           base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 🔥 Run the build command
+      - name: Build Android app
+        run: npm run tauri android build
+
+      # 🔥 Create a GitHub Release
+      - name: Create GitHub Release
+        id: release
+        uses: softprops/action-gh-release@v1
         with:
-          tagName: app-v__VERSION__
-          releaseName: "App v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: true
-          prerelease: false
-          args: "--target android"
+          files: src-tauri/target/release/*.apk
+
+      # Optionally, upload APK to the release
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
