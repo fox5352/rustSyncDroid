@@ -53,12 +53,6 @@ function Rootlayout() {
 
       alert(`failed to initialize session hook in rootlayout ${error}`);
     }
-
-    fetch("www.google.com").then(res => res.text()).then(text => alert(text.slice(0, 20))).catch(err => alert(err)).finally(
-      () => {
-        fetch("http://10.0.0.154:9090/api/image").then(res => res.text()).then(text => alert(text)).catch(err => alert(err))
-      })
-
   }, [])
 
   return (
