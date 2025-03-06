@@ -42,11 +42,11 @@ jobs:
       - name: Install Android NDK
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
-          unzip android-ndk-r21e-linux-x86_64.zip -d $HOME
-          echo "NDK_HOME=$HOME/android-ndk-r21e" >> $GITHUB_ENV
-          echo "NDK_HOME=$HOME/android-ndk-r21e" >> ~/.bashrc
+          sudo apt-get install -y wget unzip libunwind-dev
+          wget https://dl.google.com/android/repository/android-ndk-r23b-linux-x86_64.zip
+          unzip android-ndk-r23b-linux-x86_64.zip -d $HOME
+          echo "NDK_HOME=$HOME/android-ndk-r23b" >> $GITHUB_ENV
+          echo "NDK_HOME=$HOME/android-ndk-r23b" >> ~/.bashrc
 
       - name: setup Android signing
         run: |
