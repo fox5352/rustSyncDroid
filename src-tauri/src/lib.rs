@@ -37,6 +37,39 @@ fn write_to_downloads(_app: tauri::AppHandle, _data: FileData) -> Result<String,
     return Err("not yet impl".to_string());
 }
 
+#[tauri::command]
+fn read_file_with_picker(app: tauri::AppHandle) -> Result<FileData, String> {
+    let api = app.android_fs();
+
+    let paths = api
+        .show_open_file_dialog(&["*/*"], false)
+        .map_err(|err| format!("failed to open file dialog: {}", err))?;
+
+    if paths.is_empty() {
+        return Err("file not selected".to_string());
+    }
+
+    if let Some(selected_path) = paths.iter().next() {
+        let file_name = api
+            .get_file_name(&selected_path)
+            .map_err(|err| format!("failed to get file name: {}", err))?;
+        let mime_type = api
+            .get_mime_type(&selected_path)
+            .map_err(|err| format!("failed to get mime type: {}", err))?;
+        let content = api
+            .read(&selected_path)
+            .map_err(|err| format!("failed to read file: {}", err))?;
+
+        return Ok(FileData {
+            file_name,
+            mime_type,
+            content,
+        });
+    } else {
+        return Err("file not selected".to_string());
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -49,7 +82,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             write_to_file_with_picker,
-            write_to_downloads
+            write_to_downloads,
+            read_file_with_picker
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

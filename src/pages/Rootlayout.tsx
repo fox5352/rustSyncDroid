@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import LoadingProvider from "../ui/LoadingModel";
 
-import { HomeMaxTwoTone, SyncAltTwoTone } from "@mui/icons-material";
+import { HomeMaxTwoTone, SyncAltTwoTone, Settings } from "@mui/icons-material";
 
 function Rootlayout() {
   const { pathname } = useLocation();
@@ -22,8 +22,10 @@ function Rootlayout() {
   const map: Record<string, string> = {
     home: "/",
     sync: "/sync",
+    "settings": "/settings",
     "/": "home",
     "/sync": "sync",
+    "/settings": "settings"
   };
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
@@ -83,6 +85,13 @@ function Rootlayout() {
           value="sync"
           icon={<SyncAltTwoTone />}
         />
+        <BottomNavigationAction
+          label="Settings"
+          value="settings"
+          icon={<Settings />}
+        />
+
+
       </BottomNavigation>
     </LoadingProvider>
   );

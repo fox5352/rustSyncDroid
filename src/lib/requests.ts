@@ -210,8 +210,6 @@ export async function getFile(
     url,
     "GET",
     session
-
-
   );
 
   if (!res.ok) {
@@ -226,4 +224,34 @@ export async function getFile(
   if (!data) return [null, 'failed to get data from the server'];
 
   return [data.data, null];
+}
+
+export async function postFile(
+  type: string,
+  fileData: {
+    name: string,
+    type: string,
+    data: Uint8Array
+  }, session: Session
+): Promise<[boolean, string | null]> {
+  const url = `api/${type}`;
+
+  const res = await request(
+    url,
+    "POST",
+    session,
+    JSON.stringify(fileData)
+  )
+
+  if (!res.ok) {
+    return [
+      false,
+      `failed to upload file type:${type}::${res.status}:${res.statusText}`,
+    ]
+  }
+
+  return [
+    true,
+    null
+  ]
 }

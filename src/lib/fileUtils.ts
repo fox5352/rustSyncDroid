@@ -28,3 +28,27 @@ export async function saveFileWithPicker(file: FileTypeBuffer, mime_type: string
     return false;
   }
 }
+
+
+export async function readFileWithPicker(): Promise<{ name: string, type: string, data: Uint8Array } | null> {
+  try {
+    const res = await invoke<{ file_name: string, mime_type: string, content: Uint8Array }>("read_file_with_picker");
+
+    const lastDot = res.file_name.lastIndexOf(".");
+
+    const name = res.file_name.substring(0, lastDot);
+    const ext = res.file_name.substring(lastDot + 1);
+
+    const type = `${res.mime_type.split("/")[0]}/${ext}`;
+
+    return {
+      name,
+      type,
+      data: res.content
+    }
+  } catch (error) {
+    alert(`Error saving file: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+
+  }
+}
