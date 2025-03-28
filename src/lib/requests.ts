@@ -1,4 +1,7 @@
+import { io, Socket } from "socket.io-client";
+
 import { Session } from "../store/session";
+import { decrypt, encrypt } from "./utls";
 
 export type AllowLst = {
   allowList: string[];
@@ -78,7 +81,6 @@ export type FileType = {
   };
 };
 
-
 /**
  * Perform a request to the backend.
  *
@@ -91,44 +93,41 @@ export type FileType = {
  * @throws If getSessionData() fails
  * @throws If the request method is POST and no body is given
  */
-async function request(
+async function request<T>(
   url: string,
   method: "GET" | "POST" | "PUT",
   session: Session,
   body?: string
-
-) {
-  const [addr, token] = [session.url, session.token];
-
-  if (!addr || !token)
-    throw new Error("failed to get session data from backend");
-
+): Promise<T> {
   if (method == "POST" && (body == undefined || body == null))
     throw new Error("Can't do a post request without a body");
 
+  const headers = new Headers();
+  headers.append("Authorization", session.token);
+  headers.append("Content-Type", "application/json");
+
   let options = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: body,
-
+    headers,
+    body: body
+      ? JSON.stringify({
+          encryptedData: encrypt(body, session.token),
+        })
+      : undefined,
   };
 
-  const res = await fetch(`${addr}/${url}`, options);
+  const res = await fetch(`${session.url}/${url}`, options);
 
-  return res;
+  const data = decrypt(await res.json(), session.token);
+  return data as T;
 }
 
 export async function getSettings(session: Session): Promise<Settings> {
-  const res = await request("api/settings", "GET", session);
-
-  if (!res.ok)
-    throw new Error(`failed to request ${res.status}:${res.statusText}`);
-
-  const data = await res.json();
-
+  const data = await request<{ data: { settings: Settings } }>(
+    "api/settings",
+    "GET",
+    session
+  );
   return data.data.settings as Settings;
 }
 
@@ -137,20 +136,19 @@ export async function updateSettings(
   rvop: boolean = false,
   session: Session
 ) {
-  const res = await request(
+  const data = JSON.stringify({ settings: updateData });
+
+  const res = await request<{ data: { settings: Settings } }>(
     "api/settings",
     "POST",
     session,
-    JSON.stringify({ settings: updateData })
+    data
   );
 
-  if (!res.ok)
-    throw new Error(`failed to request ${res.status}:${res.statusText}`);
-
   if (rvop) {
-    const newSettings = await res.json();
+    const newSettings = res;
 
-    return newSettings;
+    return newSettings.data.settings;
   } else {
     return null;
   }
@@ -175,83 +173,145 @@ export async function getFiles<T>(
   type: string,
   session: Session
 ): Promise<[{ data: T; message: string } | null, string | null]> {
-  const res = await request(`api/${type}`, "GET", session);
-
-  if (!res.ok) {
-    return [
-      null,
-      `failed to request files type:${type}::${res.status}:${res.statusText}`,
-    ];
-  }
-
-  const data = await res.json();
+  const data = await request<T>(`api/${type}`, "GET", session);
 
   return [data as { data: T; message: string }, null];
 }
 
 export type FileTypeBuffer = FileType & {
   data?: {
-    type?: "Buffer",
-    data?: Uint8Array
-  }
-}
+    type?: "Buffer";
+    data?: Uint8Array;
+  };
+};
 
 export async function getFile(
   type: string,
-  fileData: { name: string, path: string },
+  fileData: { name: string; path: string },
   session: Session
-
 ): Promise<[FileTypeBuffer | null, string | null]> {
   const encodedName = encodeURIComponent(fileData.name);
   const encodedPath = encodeURIComponent(fileData.path);
 
-  const url = `api/${type}/file?name=${encodedName}&path=${encodedPath}`
-  const res = await request(
-    url,
-    "GET",
-    session
-  );
+  const url = `api/${type}/file?name=${encodedName}&path=${encodedPath}`;
+  const res = await request<{ data: FileTypeBuffer }>(url, "GET", session);
 
-  if (!res.ok) {
-    return [
-      null,
-      `failed to request file type:${type}::${res.status}:${res.statusText}`,
-    ]
-  }
+  const data = res.data;
 
-  const data = await res.json()
-
-  if (!data) return [null, 'failed to get data from the server'];
-
-  return [data.data, null];
+  return [data, null];
 }
 
 export async function postFile(
   type: string,
   fileData: {
-    name: string,
-    type: string,
-    data: Uint8Array
-  }, session: Session
+    name: string;
+    type: string;
+    data: Uint8Array;
+  },
+  session: Session
 ): Promise<[boolean, string | null]> {
   const url = `api/${type}`;
 
-  const res = await request(
-    url,
-    "POST",
-    session,
-    JSON.stringify(fileData)
-  )
+  await request(url, "POST", session, JSON.stringify(fileData));
 
-  if (!res.ok) {
-    return [
-      false,
-      `failed to upload file type:${type}::${res.status}:${res.statusText}`,
-    ]
-  }
+  return [true, null];
+}
 
-  return [
-    true,
-    null
-  ]
+// TODO: add a websocket function here
+export interface FileDataType {
+  id?: string;
+  name: string;
+  type: string;
+  path?: string;
+  data: string;
+  packetIndex: number;
+}
+
+export interface Packet {
+  type: "UPLOAD";
+  data: File;
+}
+
+export function testWebSocketConnection(
+  url: string,
+  timeout = 5000
+): Promise<any> {
+  const socket = io(url, { reconnection: false }); // Disable auto-reconnect for testing
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      socket.disconnect();
+      reject(new Error("Connection timed out"));
+    }, timeout);
+
+    socket.on("connect", () => {
+      clearTimeout(timer); // Clear timeout if connected
+      resolve("success");
+    });
+
+    socket.on("connect_error", (error) => {
+      clearTimeout(timer);
+      reject(new Error(`Connection failed: ${error.message || error}`));
+    });
+
+    socket.on("disconnect", () => {
+      clearTimeout(timer);
+      reject(new Error("Socket disconnected"));
+    });
+
+    socket.on("error", (error) => {
+      clearTimeout(timer);
+      reject(new Error(`Socket error: ${error.message || error}`));
+    });
+  });
+}
+
+export function connectTOSocket(url: string) {
+  return io(url);
+}
+
+export function uploadPacket(
+  socket: Socket,
+  token: string,
+  data: any,
+  timeout = 10000
+) {
+  return new Promise<any>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      socket.close();
+      reject(new Error("Upload timed out"));
+    }, timeout);
+
+    function cleanUp() {
+      clearTimeout(timeoutId);
+      if (socket.connected) {
+      }
+    }
+
+    socket.emit(
+      "UPLOAD",
+      JSON.stringify({ encryptedData: encrypt(data, token) })
+    );
+
+    socket.on("UPLOAD_STATUS", (response: any) => {
+      cleanUp();
+      if (response.status === "error") {
+        reject(new Error(response.message || "Upload Error"));
+      } else if (response.status === "success") {
+        resolve(response);
+      } else {
+        reject(new Error(`Unexpected response: ${JSON.stringify(response)}`));
+      }
+    });
+
+    socket.on("error", (error: any) => {
+      cleanUp();
+      reject(error);
+    });
+
+    socket.on("disconnect", () => {
+      cleanUp();
+      reject(new Error("Disconnected from server"));
+    });
+  });
 }
