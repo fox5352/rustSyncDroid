@@ -1,4 +1,4 @@
-use std::{io::Write, path::Path};
+use std::io::Write;
 
 use serde::{Deserialize, Serialize};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
