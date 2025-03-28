@@ -2,7 +2,8 @@ use std::io::Write;
 
 use serde::{Deserialize, Serialize};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use tauri_plugin_android_fs::{self, AndroidFs, AndroidFsExt};
+use tauri_plugin_android_fs::{self, AndroidFs, AndroidFsExt, FilePath};
+use tauri_plugin_fs::FsExt;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct FileData {
@@ -70,6 +71,56 @@ fn read_file_with_picker(app: tauri::AppHandle) -> Result<FileData, String> {
     }
 }
 
+#[tauri::command]
+fn file_picker(app: tauri::AppHandle) -> Result<FilePath, String> {
+    let api = app.android_fs();
+
+    let path = api
+        .show_open_file_dialog(&["*/*"], false)
+        .map_err(|err| 
+            format!("failed to open file dialog: {}", err)
+        )?;
+    
+    if path.is_empty() {
+        return Err("file not selected".to_string());
+    }
+
+    let uri = path
+        .iter()
+        .next()
+        .expect("failed to get first path")
+        .clone();
+
+    Ok(uri)
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct FileInfo {
+    name: String,
+    mime_type: String
+}
+
+#[tauri::command]
+async fn get_file_stats(app: tauri::AppHandle, path: FilePath) -> Result<FileInfo, String>{
+    let api = app.android_fs();
+
+    let name = api
+        .get_file_name(&path)
+        .map_err(|err| 
+            format!("failed to get file name: {}", err)
+        )?;
+    let mime_type = api
+        .get_mime_type(&path)
+        .map_err(|err|{
+            format!("failed to get mime type: {}", err)
+        })?;
+    
+    Ok(FileInfo {
+        name,
+        mime_type
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -83,7 +134,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             write_to_file_with_picker,
             write_to_downloads,
-            read_file_with_picker
+            read_file_with_picker,
+            file_picker,
+            get_file_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

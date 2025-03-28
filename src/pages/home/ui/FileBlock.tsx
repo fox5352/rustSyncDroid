@@ -108,8 +108,7 @@ export default function FileBlock({
     try {
       if (data == null) throw new Error("session is null");
 
-
-      toggleLoadingState()
+      toggleLoadingState();
 
       const [fileData, error] = await getFile(type, { name, path }, data);
 
@@ -119,15 +118,17 @@ export default function FileBlock({
 
       if (!fileData) throw new Error("file data is null");
 
-      await saveFileWithPicker(fileData, `${type}/${fileData.extension.replace(".", "")}`);
+      await saveFileWithPicker(
+        fileData,
+        `${type}/${fileData.extension.replace(".", "")}`
+      );
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return;
+      if (error instanceof Error && error.name === "AbortError") return;
       //@ts-ignore
       alert(`Error downloading ${type} :${error}`);
       return;
     }
   };
-
 
   return (
     <>
