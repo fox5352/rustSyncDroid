@@ -26,6 +26,7 @@ export default function Setttings() {
 
     try {
       const uri = await filePicker();
+      updateLoadingAmount(0);
 
       const stats = await getFileStats(uri);
 
@@ -36,16 +37,21 @@ export default function Setttings() {
 
       const socket = connectTOSocket(data.url);
 
+      const id = `${Math.round(Math.random() * 999)}${Math.round(
+        Math.random() * 999
+      )}${Math.round(Math.random() * 999)}`;
+
+      // loop the file and upload data
       await readFileBuffer(uri, async (buffer, totalSize) => {
         let packet: FileDataType = {
-          id: "",
+          id,
           name: stats.name,
           type: stats.mime_type,
           data: uint8ArrayToBase64(buffer),
           packetIndex: counter,
         };
 
-        await uploadPacket(socket, data.token, packet, 10_000);
+        await uploadPacket(socket, data.token, packet);
 
         let loadingText = "Loading";
 
@@ -67,6 +73,10 @@ export default function Setttings() {
 
         counter++;
       });
+
+      // after send completion signal
+      // TODO: add save path here later
+      socket.emit("UPLOAD_COMPLETE", JSON.stringify({ id }));
     } catch (error) {
       alert(
         `Error reading file: ${

@@ -227,9 +227,11 @@ export interface FileDataType {
   packetIndex: number;
 }
 
-export interface Packet {
-  type: "UPLOAD";
-  data: File;
+type PacketEvent = "UPLOAD" | "UPLOAD_COMPLETE";
+
+export interface SendPacket<T> {
+  type: PacketEvent;
+  data: T;
 }
 
 export function testWebSocketConnection(
@@ -270,48 +272,30 @@ export function connectTOSocket(url: string) {
   return io(url);
 }
 
-export function uploadPacket(
-  socket: Socket,
-  token: string,
-  data: any,
-  timeout = 10000
-) {
-  return new Promise<any>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      socket.close();
-      reject(new Error("Upload timed out"));
-    }, timeout);
+//  TODO: handle encryption later------------------------------------------------------------------------------------------------------------------------------------------------
 
-    function cleanUp() {
-      clearTimeout(timeoutId);
-      if (socket.connected) {
-      }
+export type PacketObj<T = any> = {
+  data: T;
+} & Record<string, any>;
+
+export async function uploadPacket(socket: Socket, token: string, obj: any) {
+  socket.emit("UPLOAD", JSON.stringify({ ...obj, data: obj.data }));
+}
+
+export async function sendPacket<T>(socket: Socket, packet: SendPacket<T>) {
+  socket.emit(packet.type, JSON.stringify(packet.data));
+}
+
+export interface ReivePacket<T> {
+  type: PacketEvent;
+  condition: (data: T) => boolean;
+  callback: (data: T) => void;
+}
+
+export async function getPacket<T>(socket: Socket, packet: ReivePacket<T>) {
+  socket.on(packet.type, (obj: PacketObj<T>) => {
+    if (packet.condition(obj.data)) {
+      packet.callback(obj.data);
     }
-
-    socket.emit(
-      "UPLOAD",
-      JSON.stringify({ encryptedData: encrypt(data, token) })
-    );
-
-    socket.on("UPLOAD_STATUS", (response: any) => {
-      cleanUp();
-      if (response.status === "error") {
-        reject(new Error(response.message || "Upload Error"));
-      } else if (response.status === "success") {
-        resolve(response);
-      } else {
-        reject(new Error(`Unexpected response: ${JSON.stringify(response)}`));
-      }
-    });
-
-    socket.on("error", (error: any) => {
-      cleanUp();
-      reject(error);
-    });
-
-    socket.on("disconnect", () => {
-      cleanUp();
-      reject(new Error("Disconnected from server"));
-    });
   });
 }
