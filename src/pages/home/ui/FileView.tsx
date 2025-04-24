@@ -14,7 +14,10 @@ export default function FileView({ type }: FileView) {
 
   // page state
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState<{ message: string, error: "error" | "info" | "warnaing" } | null>(null);
+  const [isError, setIsError] = useState<{
+    message: string;
+    error: "error" | "info" | "warnaing";
+  } | null>(null);
   const [fileData, setFileData] = useState<any[] | null>(null);
 
   useEffect(() => {
@@ -42,14 +45,13 @@ export default function FileView({ type }: FileView) {
     fetchFileData();
   }, [session, type]);
 
-
-
   return (
-    <Box sx={{
-      flexGrow: 1,
-      maxHeight: "calc(100% - 50px)",
-      overflow: "scroll"
-    }}
+    <Box
+      sx={{
+        flexGrow: 1,
+        maxHeight: "calc(100% - 50px)",
+        overflow: "scroll",
+      }}
       id="fileview-container"
     >
       <Divider />
@@ -71,16 +73,18 @@ export default function FileView({ type }: FileView) {
           </Typography>
         </Box>
       ) : isLoading ? (
-        <Box sx={{
-          position: "absolute",
-          top: "0%",
-          left: "0%",
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "0%",
+            left: "0%",
+            height: "100%",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <CircularProgress size={200} />
         </Box>
       ) : (
@@ -97,7 +101,12 @@ export default function FileView({ type }: FileView) {
         >
           {fileData &&
             fileData.map((block, index) => (
-              <FolderBlock key={index} folder={block.key} fileData={block} type={type} />
+              <FolderBlock
+                key={index}
+                folder={block.key}
+                fileData={block}
+                type={type}
+              />
             ))}
         </Box>
       )}

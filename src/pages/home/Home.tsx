@@ -1,6 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useSession } from "../../store/session";
-import { BottomNavigation, BottomNavigationAction, Container } from "@mui/material";
+import {
+  BottomNavigation,
+  BottomNavigationAction,
+  Container,
+} from "@mui/material";
 import { ImageTwoTone, AudioFile, VideoFile } from "@mui/icons-material";
 import FileView from "./ui/FileView";
 import { useState } from "react";
@@ -11,7 +15,7 @@ export default function Home() {
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setTab(newValue);
-  }
+  };
 
   // if (loading) {
   //   return (
@@ -49,9 +53,7 @@ export default function Home() {
         p: 0,
       }}
     >
-      <FileView
-        type={tab}
-      />
+      <FileView type={tab} />
       <BottomNavigation
         sx={{
           height: "50px",
